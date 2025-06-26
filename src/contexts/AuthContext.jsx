@@ -1,24 +1,39 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext } from "react";
+import axios from "axios";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  const login = (email, password) => {
-    // Hardcoded admin credentials
-    if (email === "admin@example.com" && password === "admin123") {
-      setUser({ 
-        email: "admin@example.com", 
-        name: "Admin",
-        role: "admin"
+  const login = async (email, password) => {
+    try {
+      const res = await axios.post("http://localhost:4000/api/admin/login", {
+        email,
+        password,
       });
-      return true;
+
+      const token = res.data.token;
+
+      if (token) {
+        localStorage.setItem("adminToken", token); // Store token for auth
+        setUser({
+          email,
+          name: "Admin",
+          role: "admin",
+        });
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      return false;
     }
-    return false; // Login failed
   };
 
   const logout = () => {
+    localStorage.removeItem("adminToken");
     setUser(null);
   };
 
@@ -29,7 +44,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Add this custom hook
 export const useAuth = () => {
   return useContext(AuthContext);
 };
