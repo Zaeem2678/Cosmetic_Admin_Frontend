@@ -17,12 +17,16 @@ import {
   Search as SearchIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { DataGrid } from "@mui/x-data-grid";
 import Layout from "../../components/layout/Layout";
 import axios from "axios";
 
 const Products = () => {
+  const [editMode, setEditMode] = useState(false);
+  const [editProductId, setEditProductId] = useState(null);
+
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
@@ -57,12 +61,16 @@ const Products = () => {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await axios.get("http://localhost:4000/api/category/getAll", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setCategories(res.data.categories || []);
+      const res = await axios.get(
+        "http://localhost:4000/api/category/getAllCategories",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Category response:", res.data);
+      setCategories(res.data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -75,6 +83,11 @@ const Products = () => {
 
   // Delete handler
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
+    if (!confirmDelete) return;
+
     try {
       const token = localStorage.getItem("adminToken");
       await axios.delete(
@@ -91,6 +104,18 @@ const Products = () => {
     }
   };
 
+  const handleEdit = (product) => {
+    setEditMode(true);
+    setEditProductId(product._id);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      categoryId: product.categoryId?._id || "",
+    });
+    setOpenModal(true);
+  };
+
   // Submit Add Product
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,18 +128,32 @@ const Products = () => {
       data.append("categoryId", formData.categoryId);
       if (image) data.append("image", image);
 
-      await axios.post("http://localhost:4000/api/product/addProduct", data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (editMode && editProductId) {
+        await axios.patch(
+          `http://localhost:4000/api/product/updateProduct/${editProductId}`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } else {
+        await axios.post("http://localhost:4000/api/product/addProduct", data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
 
       setFormData({ name: "", description: "", price: "", categoryId: "" });
       setImage(null);
       setOpenModal(false);
+      setEditMode(false);
+      setEditProductId(null);
       fetchProducts();
     } catch (error) {
-      console.error("Failed to add product", error);
+      console.error("Failed to submit product", error);
     }
   };
 
@@ -133,10 +172,12 @@ const Products = () => {
     {
       field: "actions",
       headerName: "Actions",
+      type: "actions",
       width: 120,
+      sortable: false,
       renderCell: (params) => (
         <Box>
-          <IconButton color="primary">
+          <IconButton color="primary" onClick={() => handleEdit(params.row)}>
             <EditIcon />
           </IconButton>
           <IconButton
@@ -157,7 +198,17 @@ const Products = () => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setOpenModal(true)}
+          onClick={() => {
+            setFormData({
+              name: "",
+              description: "",
+              price: "",
+              categoryId: "",
+            });
+            setImage(null);
+            setEditMode(false);
+            setOpenModal(true);
+          }}
         >
           Add Product
         </Button>
@@ -190,15 +241,30 @@ const Products = () => {
           pageSize={5}
           rowsPerPageOptions={[5, 10, 20]}
           checkboxSelection
+          disableSelectionOnClick
+          sx={{
+            "& .MuiDataGrid-cell": {
+              alignItems: "center",
+            },
+          }}
         />
       </Paper>
 
       {/* Add Product Modal */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Paper sx={{ width: 500, p: 4, mx: "auto", mt: 10 }}>
+        <Paper sx={{ width: 500, p: 4, mx: "auto", mt: 10, position: "relative" }}>
+          {/* Close (X) Button */}
+          <IconButton
+            onClick={() => setOpenModal(false)}
+            sx={{ position: "absolute", top: 8, right: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+
           <Typography variant="h6" mb={2}>
-            Add New Product
+            {editMode ? "Edit Product" : "Add New Product"}
           </Typography>
+
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
@@ -232,16 +298,22 @@ const Products = () => {
               required
             />
 
-            <TextField
-              fullWidth
-              label="Category ID"
-              value={formData.categoryId}
-              onChange={(e) =>
-                setFormData({ ...formData, categoryId: e.target.value })
-              }
-              margin="normal"
-              required
-            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={formData.categoryId}
+                onChange={(e) =>
+                  setFormData({ ...formData, categoryId: e.target.value })
+                }
+                label="Category"
+              >
+                {categories.map((cat) => (
+                  <MenuItem key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
             <Button variant="outlined" component="label" sx={{ mt: 2 }}>
               Upload Image
