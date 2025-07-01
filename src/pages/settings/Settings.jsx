@@ -1,202 +1,161 @@
-import React from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Tabs, 
-  Tab,
+import React, { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Grid
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import Layout from '../../components/layout/Layout';
+import axios from 'axios';
 
 const Settings = () => {
-  const [tabValue, setTabValue] = React.useState(0);
-  const [currency, setCurrency] = React.useState('USD');
-  const [notifications, setNotifications] = React.useState(true);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [modal, setModal] = useState({ open: false, type: '', message: '' });
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmNewPassword) {
+      setModal({
+        open: true,
+        type: 'error',
+        message: "New Password and Confirm Password do not match.",
+      });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      await axios.patch(
+        "http://localhost:4000/api/admin/update-password",
+        {
+          currentPassword,
+          newPassword,
+          confirmNewPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setModal({
+        open: true,
+        type: 'success',
+        message: "Your password has been changed successfully.",
+      });
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (error) {
+      setModal({
+        open: true,
+        type: 'error',
+        message: error.response?.data?.message || "Something went wrong",
+      });
+    }
   };
 
   return (
     <Layout>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4">Settings</Typography>
+        <Typography variant="h4">Security Settings</Typography>
       </Box>
-      
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label="General" />
-          <Tab label="Store" />
-          <Tab label="Notifications" />
-          <Tab label="Security" />
-        </Tabs>
-      </Paper>
 
       <Paper sx={{ p: 3 }}>
-        {tabValue === 0 && (
-          <Box component="form">
-            <Typography variant="h6" gutterBottom>
-              General Settings
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Admin Name"
-                  defaultValue="John Doe"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  defaultValue="admin@example.com"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button variant="contained" color="primary">
-                  Save Changes
-                </Button>
-              </Grid>
+        <Box component="form" onSubmit={handleChangePassword}>
+          <Typography variant="h6" gutterBottom>
+            Update Password
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Current Password"
+                type="password"
+                variant="outlined"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
             </Grid>
-          </Box>
-        )}
-
-        {tabValue === 1 && (
-          <Box component="form">
-            <Typography variant="h6" gutterBottom>
-              Store Settings
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Store Name"
-                  defaultValue="Cosmetic Store"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Currency</InputLabel>
-                  <Select
-                    value={currency}
-                    label="Currency"
-                    onChange={(e) => setCurrency(e.target.value)}
-                  >
-                    <MenuItem value="USD">USD ($)</MenuItem>
-                    <MenuItem value="EUR">EUR (€)</MenuItem>
-                    <MenuItem value="GBP">GBP (£)</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Store Address"
-                  multiline
-                  rows={3}
-                  defaultValue="123 Beauty St, Cosmetic City"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button variant="contained" color="primary">
-                  Save Changes
-                </Button>
-              </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="New Password"
+                type="password"
+                variant="outlined"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
             </Grid>
-          </Box>
-        )}
-
-        {tabValue === 2 && (
-          <Box component="form">
-            <Typography variant="h6" gutterBottom>
-              Notification Settings
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={notifications}
-                      onChange={(e) => setNotifications(e.target.checked)}
-                    />
-                  }
-                  label="Enable Email Notifications"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="New Order Notifications"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Low Stock Alerts"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button variant="contained" color="primary">
-                  Save Changes
-                </Button>
-              </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Confirm New Password"
+                type="password"
+                variant="outlined"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                required
+                error={!!confirmNewPassword && confirmNewPassword !== newPassword}
+                helperText={
+                  !!confirmNewPassword && confirmNewPassword !== newPassword
+                    ? "Passwords do not match"
+                    : ""
+                }
+              />
             </Grid>
-          </Box>
-        )}
-
-        {tabValue === 3 && (
-          <Box component="form">
-            <Typography variant="h6" gutterBottom>
-              Security Settings
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Current Password"
-                  type="password"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="New Password"
-                  type="password"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Confirm New Password"
-                  type="password"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button variant="contained" color="primary">
-                  Change Password
-                </Button>
-              </Grid>
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+              >
+                Change Password
+              </Button>
             </Grid>
-          </Box>
-        )}
+          </Grid>
+        </Box>
       </Paper>
+
+      {/* Modal Dialog for Success/Error */}
+      <Dialog
+        open={modal.open}
+        onClose={() => setModal({ ...modal, open: false })}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {modal.type === 'success' && (
+            <CheckCircleOutlineIcon sx={{ color: 'green', fontSize: 32 }} />
+          )}
+          {modal.type === 'error' && (
+            <HighlightOffIcon sx={{ color: 'red', fontSize: 32 }} />
+          )}
+          {modal.type === 'success' ? 'Success' : 'Error'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>{modal.message}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModal({ ...modal, open: false })} autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Layout>
   );
 };

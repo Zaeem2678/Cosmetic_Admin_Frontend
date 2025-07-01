@@ -20,15 +20,18 @@ const Login = () => {
   const location = useLocation();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      const from = location.state?.from?.pathname || "/dashboard";
-      navigate(from, { replace: true });
-    } else {
-      setError("Invalid admin credentials");
-    }
-  };
+  e.preventDefault();
+
+  const success = await login(email, password);  // ⬅️ Await here
+
+  if (success) {
+    const from = location.state?.from?.pathname || '/dashboard';
+    navigate(from, { replace: true });
+  } else {
+    setError("Invalid admin credentials");
+  }
+};
+
 
   return (
     <Box

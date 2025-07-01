@@ -23,41 +23,42 @@ import { DataGrid } from "@mui/x-data-grid";
 import Layout from "../../components/layout/Layout";
 import axios from "axios";
 
-const Products = () => {
+const MostSellingProducts = () => {
   const [editMode, setEditMode] = useState(false);
   const [editProductId, setEditProductId] = useState(null);
-
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    price: "",
+    productQuantity: "",
     categoryId: "",
   });
   const [image, setImage] = useState(null);
 
-  // Fetch products
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("adminToken");
       const res = await axios.get(
-        "http://localhost:4000/api/product/getAllProducts",
+        "http://localhost:4000/api/mostSalingProdoct/getTopMostSalingProduct",
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setProducts(res.data || []);
+
+      const cleanData = (res.data.mostSalingProducts || []).filter(
+        (item) => item && item._id
+      );
+
+      setProducts(cleanData);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
   };
 
-  // Fetch categories
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("adminToken");
@@ -69,7 +70,6 @@ const Products = () => {
           },
         }
       );
-      console.log("Category response:", res.data);
       setCategories(res.data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -81,7 +81,6 @@ const Products = () => {
     fetchCategories();
   }, []);
 
-  // Delete handler
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this product?"
@@ -91,7 +90,7 @@ const Products = () => {
     try {
       const token = localStorage.getItem("adminToken");
       await axios.delete(
-        `http://localhost:4000/api/product/deleteProduct/${id}`,
+        `http://localhost:4000/api/mostSalingProdoct/deleteMostSalingProduct/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -108,29 +107,26 @@ const Products = () => {
     setEditMode(true);
     setEditProductId(product._id);
     setFormData({
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      categoryId: product.categoryId?._id || "",
+      name: product.productName,
+      productQuantity: product.quantity,
+      categoryId: product.categoryId || "",
     });
     setOpenModal(true);
   };
 
-  // Submit Add Product
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("adminToken");
       const data = new FormData();
       data.append("name", formData.name);
-      data.append("description", formData.description);
-      data.append("price", formData.price);
+      data.append("productQuantity", formData.productQuantity);
       data.append("categoryId", formData.categoryId);
       if (image) data.append("image", image);
 
       if (editMode && editProductId) {
         await axios.patch(
-          `http://localhost:4000/api/product/updateProduct/${editProductId}`,
+          `http://localhost:4000/api/mostSalingProdoct/updateMostSalingProduct/${editProductId}`,
           data,
           {
             headers: {
@@ -139,14 +135,18 @@ const Products = () => {
           }
         );
       } else {
-        await axios.post("http://localhost:4000/api/product/addProduct", data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await axios.post(
+          "http://localhost:4000/api/mostSalingProdoct/addMostSalingProduct",
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       }
 
-      setFormData({ name: "", description: "", price: "", categoryId: "" });
+      setFormData({ name: "", productQuantity: "", categoryId: "" });
       setImage(null);
       setOpenModal(false);
       setEditMode(false);
@@ -158,52 +158,35 @@ const Products = () => {
   };
 
   const columns = [
-  { field: "_id", headerName: "ID", width: 220 },
-  { field: "name", headerName: "Product Name", width: 200 },
-  {
-    field: "categoryId",
-    headerName: "Category",
-    width: 130,
-    renderCell: (params) => params.row.categoryId?.name || "N/A",
-  },
-  { field: "price", headerName: "Price", width: 100 },
-  {
-    field: "actions",
-    headerName: "Actions",
-    type: "actions",
-    width: 120,
-    sortable: false,
-    renderCell: (params) => (
-      <Box>
-        <IconButton color="primary" onClick={() => handleEdit(params.row)}>
-          <EditIcon />
-        </IconButton>
-        <IconButton
-          color="error"
-          onClick={() => handleDelete(params.row._id)}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </Box>
-    ),
-  },
-];
-
+    { field: "productName", headerName: "Product Name", width: 200 },
+    { field: "quantity", headerName: "Quantity", width: 130 },
+    { field: "categoryName", headerName: "Category", width: 150 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 120,
+      renderCell: (params) => (
+        <Box>
+          <IconButton onClick={() => handleEdit(params.row)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton onClick={() => handleDelete(params.row._id)}>
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
 
   return (
     <Layout>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h4">Products</Typography>
+        <Typography variant="h4">Most Selling Products</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
-            setFormData({
-              name: "",
-              description: "",
-              price: "",
-              categoryId: "",
-            });
+            setFormData({ name: "", productQuantity: "", categoryId: "" });
             setImage(null);
             setEditMode(false);
             setOpenModal(true);
@@ -212,25 +195,6 @@ const Products = () => {
           Add Product
         </Button>
       </Box>
-
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <TextField
-            placeholder="Search products..."
-            variant="outlined"
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ flexGrow: 1, mr: 2 }}
-            InputProps={{
-              startAdornment: (
-                <SearchIcon sx={{ mr: 1, color: "action.active" }} />
-              ),
-            }}
-          />
-          <Button variant="outlined">Filter</Button>
-        </Box>
-      </Paper>
 
       <Paper sx={{ height: 500, width: "100%" }}>
         <DataGrid
@@ -241,18 +205,13 @@ const Products = () => {
           rowsPerPageOptions={[5, 10, 20]}
           checkboxSelection
           disableSelectionOnClick
-          sx={{
-            "& .MuiDataGrid-cell": {
-              alignItems: "center",
-            },
-          }}
         />
       </Paper>
 
-      {/* Add Product Modal */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Paper sx={{ width: 500, p: 4, mx: "auto", mt: 10, position: "relative" }}>
-          {/* Close (X) Button */}
+        <Paper
+          sx={{ width: 500, p: 4, mx: "auto", mt: 10, position: "relative" }}
+        >
           <IconButton
             onClick={() => setOpenModal(false)}
             sx={{ position: "absolute", top: 8, right: 8 }}
@@ -267,7 +226,7 @@ const Products = () => {
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Name"
+              label="Product Name"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -277,21 +236,11 @@ const Products = () => {
             />
             <TextField
               fullWidth
-              label="Description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Price"
+              label="Quantity"
               type="number"
-              value={formData.price}
+              value={formData.productQuantity}
               onChange={(e) =>
-                setFormData({ ...formData, price: e.target.value })
+                setFormData({ ...formData, productQuantity: e.target.value })
               }
               margin="normal"
               required
@@ -335,4 +284,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default MostSellingProducts;

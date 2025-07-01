@@ -19,6 +19,8 @@ import {
   Category as CategoryIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import ListItemButton from "@mui/material/ListItemButton";
 
 const drawerWidth = 240;
 
@@ -26,9 +28,11 @@ const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
   { text: "Category", icon: <CategoryIcon />, path: "/category" },
   { text: "Products", icon: <ProductsIcon />, path: "/products" },
-  { text: "Customers", icon: <CustomersIcon />, path: "/customers" },
-  { text: "Orders", icon: <OrdersIcon />, path: "/orders" },
-  { text: "Analytics", icon: <AnalyticsIcon />, path: "/analytics" },
+  {
+    text: "Most Selling",
+    icon: <TrendingUpIcon />,
+    path: "/mostsellingproducts",
+  },
   { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
 ];
 
@@ -48,13 +52,11 @@ const Sidebar = ({ open, onClose }) => {
       <Box sx={{ overflow: "auto" }}>
         <List>
           {menuItems.map((item) => (
-            <ListItem
-              button
-              key={item.text}
-              onClick={() => navigate(item.path)}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton onClick={() => navigate(item.path)}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
             </ListItem>
           ))}
         </List>

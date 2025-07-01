@@ -3,12 +3,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Products from "../pages/products/Products";
-import Orders from "../pages/orders/Orders";
-import Customers from "../pages/customers/Customers";
-import Analytics from "../pages/analytics/Analytics";
 import Settings from "../pages/settings/Settings";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Categories from "../pages/category/Categories";
+import MostSellingProducts from "../pages/MostSelling/MostSellingProducts";
 
 const AppRoutes = () => {
   return (
@@ -42,26 +40,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/orders"
+        path="/mostsellingproducts"
         element={
           <ProtectedRoute>
-            <Orders />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/customers"
-        element={
-          <ProtectedRoute>
-            <Customers />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/analytics"
-        element={
-          <ProtectedRoute>
-            <Analytics />
+            <MostSellingProducts />
           </ProtectedRoute>
         }
       />
