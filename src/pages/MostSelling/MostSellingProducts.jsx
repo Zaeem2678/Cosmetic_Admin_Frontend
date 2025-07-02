@@ -167,10 +167,13 @@ const MostSellingProducts = () => {
       width: 120,
       renderCell: (params) => (
         <Box>
-          <IconButton onClick={() => handleEdit(params.row)}>
+          <IconButton color="primary" onClick={() => handleEdit(params.row)}>
             <EditIcon />
           </IconButton>
-          <IconButton onClick={() => handleDelete(params.row._id)}>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row._id)}
+          >
             <DeleteIcon />
           </IconButton>
         </Box>
@@ -183,6 +186,9 @@ const MostSellingProducts = () => {
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h4">Most Selling Products</Typography>
         <Button
+          sx={{
+            backgroundColor: "#3B2B86",
+          }}
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
