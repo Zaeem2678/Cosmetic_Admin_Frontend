@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -9,18 +9,18 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
-} from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import Layout from '../../components/layout/Layout';
-import axios from 'axios';
+  DialogActions,
+} from "@mui/material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import Layout from "../../components/layout/Layout";
+import axios from "axios";
 
 const Settings = () => {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [modal, setModal] = useState({ open: false, type: '', message: '' });
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [modal, setModal] = useState({ open: false, type: "", message: "" });
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ const Settings = () => {
     if (newPassword !== confirmNewPassword) {
       setModal({
         open: true,
-        type: 'error',
+        type: "error",
         message: "New Password and Confirm Password do not match.",
       });
       return;
@@ -53,17 +53,17 @@ const Settings = () => {
 
       setModal({
         open: true,
-        type: 'success',
+        type: "success",
         message: "Your password has been changed successfully.",
       });
 
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmNewPassword('');
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
     } catch (error) {
       setModal({
         open: true,
-        type: 'error',
+        type: "error",
         message: error.response?.data?.message || "Something went wrong",
       });
     }
@@ -112,7 +112,9 @@ const Settings = () => {
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 required
-                error={!!confirmNewPassword && confirmNewPassword !== newPassword}
+                error={
+                  !!confirmNewPassword && confirmNewPassword !== newPassword
+                }
                 helperText={
                   !!confirmNewPassword && confirmNewPassword !== newPassword
                     ? "Passwords do not match"
@@ -120,11 +122,20 @@ const Settings = () => {
                 }
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid
+              item
+              xs={12}
+              sx={{
+                alignContent: "center",
+              }}
+            >
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
+                sx={{
+                  backgroundColor: "#3B2B86",
+                }}
               >
                 Change Password
               </Button>
@@ -138,14 +149,14 @@ const Settings = () => {
         open={modal.open}
         onClose={() => setModal({ ...modal, open: false })}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {modal.type === 'success' && (
-            <CheckCircleOutlineIcon sx={{ color: 'green', fontSize: 32 }} />
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {modal.type === "success" && (
+            <CheckCircleOutlineIcon sx={{ color: "green", fontSize: 32 }} />
           )}
-          {modal.type === 'error' && (
-            <HighlightOffIcon sx={{ color: 'red', fontSize: 32 }} />
+          {modal.type === "error" && (
+            <HighlightOffIcon sx={{ color: "red", fontSize: 32 }} />
           )}
-          {modal.type === 'success' ? 'Success' : 'Error'}
+          {modal.type === "success" ? "Success" : "Error"}
         </DialogTitle>
         <DialogContent>
           <Typography>{modal.message}</Typography>

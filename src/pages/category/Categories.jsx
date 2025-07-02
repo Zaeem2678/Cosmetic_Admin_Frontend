@@ -145,7 +145,13 @@ const Categories = () => {
             fullWidth
             required
           />
-          <Button type="submit" variant="contained">
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              backgroundColor: "#3B2B86",
+            }}
+          >
             {editId ? "Update" : "Add"}
           </Button>
         </Box>
@@ -164,10 +170,10 @@ const Categories = () => {
                 divider
                 secondaryAction={
                   <>
-                    <IconButton onClick={() => handleEdit(cat)}>
+                    <IconButton color="primary" onClick={() => handleEdit(cat)}>
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(cat._id)}>
+                    <IconButton color="error" onClick={() => handleDelete(cat._id)}>
                       <DeleteIcon />
                     </IconButton>
                   </>

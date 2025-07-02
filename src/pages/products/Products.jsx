@@ -158,37 +158,36 @@ const Products = () => {
   };
 
   const columns = [
-  { field: "_id", headerName: "ID", width: 220 },
-  { field: "name", headerName: "Product Name", width: 200 },
-  {
-    field: "categoryId",
-    headerName: "Category",
-    width: 130,
-    renderCell: (params) => params.row.categoryId?.name || "N/A",
-  },
-  { field: "price", headerName: "Price", width: 100 },
-  {
-    field: "actions",
-    headerName: "Actions",
-    type: "actions",
-    width: 120,
-    sortable: false,
-    renderCell: (params) => (
-      <Box>
-        <IconButton color="primary" onClick={() => handleEdit(params.row)}>
-          <EditIcon />
-        </IconButton>
-        <IconButton
-          color="error"
-          onClick={() => handleDelete(params.row._id)}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </Box>
-    ),
-  },
-];
-
+    { field: "_id", headerName: "ID", width: 220 },
+    { field: "name", headerName: "Product Name", width: 200 },
+    {
+      field: "categoryId",
+      headerName: "Category",
+      width: 130,
+      renderCell: (params) => params.row.categoryId?.name || "N/A",
+    },
+    { field: "price", headerName: "Price", width: 100 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      type: "actions",
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Box>
+          <IconButton color="primary" onClick={() => handleEdit(params.row)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row._id)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
 
   return (
     <Layout>
@@ -196,6 +195,9 @@ const Products = () => {
         <Typography variant="h4">Products</Typography>
         <Button
           variant="contained"
+          sx={{
+            backgroundColor: "#3B2B86",
+          }}
           startIcon={<AddIcon />}
           onClick={() => {
             setFormData({
@@ -212,25 +214,6 @@ const Products = () => {
           Add Product
         </Button>
       </Box>
-
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <TextField
-            placeholder="Search products..."
-            variant="outlined"
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ flexGrow: 1, mr: 2 }}
-            InputProps={{
-              startAdornment: (
-                <SearchIcon sx={{ mr: 1, color: "action.active" }} />
-              ),
-            }}
-          />
-          <Button variant="outlined">Filter</Button>
-        </Box>
-      </Paper>
 
       <Paper sx={{ height: 500, width: "100%" }}>
         <DataGrid
@@ -251,7 +234,9 @@ const Products = () => {
 
       {/* Add Product Modal */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Paper sx={{ width: 500, p: 4, mx: "auto", mt: 10, position: "relative" }}>
+        <Paper
+          sx={{ width: 500, p: 4, mx: "auto", mt: 10, position: "relative" }}
+        >
           {/* Close (X) Button */}
           <IconButton
             onClick={() => setOpenModal(false)}
