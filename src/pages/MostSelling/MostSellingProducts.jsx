@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import {
   Add as AddIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Close as CloseIcon,
@@ -27,7 +26,6 @@ const MostSellingProducts = () => {
   const [editMode, setEditMode] = useState(false);
   const [editProductId, setEditProductId] = useState(null);
   const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
@@ -36,6 +34,7 @@ const MostSellingProducts = () => {
     categoryId: "",
   });
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const fetchProducts = async () => {
     try {
@@ -48,11 +47,9 @@ const MostSellingProducts = () => {
           },
         }
       );
-
       const cleanData = (res.data.mostSalingProducts || []).filter(
         (item) => item && item._id
       );
-
       setProducts(cleanData);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -111,6 +108,8 @@ const MostSellingProducts = () => {
       productQuantity: product.quantity,
       categoryId: product.categoryId || "",
     });
+    setImagePreview(product.image || null);
+    setImage(null);
     setOpenModal(true);
   };
 
@@ -148,6 +147,7 @@ const MostSellingProducts = () => {
 
       setFormData({ name: "", productQuantity: "", categoryId: "" });
       setImage(null);
+      setImagePreview(null);
       setOpenModal(false);
       setEditMode(false);
       setEditProductId(null);
@@ -155,6 +155,14 @@ const MostSellingProducts = () => {
     } catch (error) {
       console.error("Failed to submit product", error);
     }
+  };
+
+  const handleModalClose = () => {
+    setOpenModal(false);
+    setImage(null);
+    setImagePreview(null);
+    setEditMode(false);
+    setEditProductId(null);
   };
 
   const columns = [
@@ -186,14 +194,13 @@ const MostSellingProducts = () => {
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h4">Most Selling Products</Typography>
         <Button
-          sx={{
-            backgroundColor: "#3B2B86",
-          }}
+          sx={{ backgroundColor: "#3B2B86" }}
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
             setFormData({ name: "", productQuantity: "", categoryId: "" });
             setImage(null);
+            setImagePreview(null);
             setEditMode(false);
             setOpenModal(true);
           }}
@@ -214,12 +221,18 @@ const MostSellingProducts = () => {
         />
       </Paper>
 
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+      <Modal open={openModal} onClose={handleModalClose}>
         <Paper
-          sx={{ width: 500, p: 4, mx: "auto", mt: 10, position: "relative" }}
+          sx={{
+            width: 700,
+            p: 4,
+            mx: "auto",
+            mt: 10,
+            position: "relative",
+          }}
         >
           <IconButton
-            onClick={() => setOpenModal(false)}
+            onClick={handleModalClose}
             sx={{ position: "absolute", top: 8, right: 8 }}
           >
             <CloseIcon />
@@ -229,61 +242,95 @@ const MostSellingProducts = () => {
             {editMode ? "Edit Product" : "Add New Product"}
           </Typography>
 
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Product Name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Quantity"
-              type="number"
-              value={formData.productQuantity}
-              onChange={(e) =>
-                setFormData({ ...formData, productQuantity: e.target.value })
-              }
-              margin="normal"
-              required
-            />
+          <Box display="flex" gap={4}>
+            {/* Form */}
+            <Box flex={1}>
+              <form onSubmit={handleSubmit}>
+                <TextField
+                  fullWidth
+                  label="Product Name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  margin="normal"
+                  required
+                />
+                <TextField
+                  fullWidth
+                  label="Quantity"
+                  type="number"
+                  value={formData.productQuantity}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      productQuantity: e.target.value,
+                    })
+                  }
+                  margin="normal"
+                  required
+                />
 
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={formData.categoryId}
-                onChange={(e) =>
-                  setFormData({ ...formData, categoryId: e.target.value })
-                }
-                label="Category"
-              >
-                {categories.map((cat) => (
-                  <MenuItem key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <FormControl fullWidth margin="normal" required>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={formData.categoryId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, categoryId: e.target.value })
+                    }
+                    label="Category"
+                  >
+                    {categories.map((cat) => (
+                      <MenuItem key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-            <Button variant="outlined" component="label" sx={{ mt: 2 }}>
-              Upload Image
-              <input
-                type="file"
-                hidden
-                onChange={(e) => setImage(e.target.files[0])}
-              />
-            </Button>
+                <Button variant="outlined" component="label" sx={{ mt: 2 }}>
+                  Upload Image
+                  <input
+                    type="file"
+                    hidden
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      setImage(file);
+                      if (file) {
+                        setImagePreview(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+                </Button>
 
-            <Box mt={3}>
-              <Button type="submit" variant="contained" fullWidth>
-                Submit
-              </Button>
+                <Box mt={3}>
+                  <Button type="submit" variant="contained" fullWidth>
+                    Submit
+                  </Button>
+                </Box>
+              </form>
             </Box>
-          </form>
+
+            {/* Image Preview */}
+            {imagePreview && (
+              <Box
+                flex={1}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "300px",
+                    borderRadius: "8px",
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
         </Paper>
       </Modal>
     </Layout>
