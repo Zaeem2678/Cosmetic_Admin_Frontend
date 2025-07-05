@@ -32,7 +32,8 @@ const MostSellingProducts = () => {
     name: "",
     productQuantity: "",
     categoryId: "",
-    description: "", // ✅ added
+    description: "",
+    price: "", // ✅ NEW FIELD
   });
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -108,7 +109,8 @@ const MostSellingProducts = () => {
       name: product.productName,
       productQuantity: product.quantity,
       categoryId: product.categoryId || "",
-      description: product.description || "", // ✅ added
+      description: product.description || "",
+      price: product.price || "", // ✅ ADD PRICE
     });
     setImagePreview(product.image || null);
     setImage(null);
@@ -123,7 +125,8 @@ const MostSellingProducts = () => {
       data.append("name", formData.name);
       data.append("productQuantity", formData.productQuantity);
       data.append("categoryId", formData.categoryId);
-      data.append("description", formData.description); // ✅ added
+      data.append("description", formData.description);
+      data.append("price", formData.price); // ✅ SEND PRICE
       if (image) data.append("image", image);
 
       if (editMode && editProductId) {
@@ -152,7 +155,8 @@ const MostSellingProducts = () => {
         name: "",
         productQuantity: "",
         categoryId: "",
-        description: "", // ✅ reset
+        description: "",
+        price: "", // ✅ RESET
       });
       setImage(null);
       setImagePreview(null);
@@ -176,6 +180,7 @@ const MostSellingProducts = () => {
   const columns = [
     { field: "productName", headerName: "Product Name", width: 200 },
     { field: "quantity", headerName: "Quantity", width: 130 },
+    { field: "price", headerName: "Price (€)", width: 130 }, // ✅ SHOW PRICE
     { field: "categoryName", headerName: "Category", width: 150 },
     {
       field: "actions",
@@ -210,7 +215,8 @@ const MostSellingProducts = () => {
               name: "",
               productQuantity: "",
               categoryId: "",
-              description: "", // ✅ reset
+              description: "",
+              price: "", // ✅ RESET
             });
             setImage(null);
             setImagePreview(null);
@@ -235,15 +241,18 @@ const MostSellingProducts = () => {
       </Paper>
 
       <Modal open={openModal} onClose={handleModalClose}>
-        <Paper
-          sx={{
-            width: 700,
-            p: 4,
-            mx: "auto",
-            mt: 10,
-            position: "relative",
-          }}
-        >
+  <Paper
+    sx={{
+      width: 700,
+      maxHeight: "90vh", // 👈 restrict modal height
+      overflowY: "auto", // 👈 enable scroll inside modal
+      p: 4,
+      mx: "auto",
+      mt: 10,
+      position: "relative",
+    }}
+  >
+
           <IconButton
             onClick={handleModalClose}
             sx={{ position: "absolute", top: 8, right: 8 }}
@@ -284,13 +293,30 @@ const MostSellingProducts = () => {
                   required
                 />
 
-                {/* ✅ Description Field */}
+                <TextField
+                  fullWidth
+                  label="Price (€)"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      price: e.target.value,
+                    })
+                  }
+                  margin="normal"
+                  required
+                />
+
                 <TextField
                   fullWidth
                   label="Description"
                   value={formData.description}
                   onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                    setFormData({
+                      ...formData,
+                      description: e.target.value,
+                    })
                   }
                   margin="normal"
                   multiline
