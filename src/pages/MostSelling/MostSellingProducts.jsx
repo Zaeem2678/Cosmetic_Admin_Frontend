@@ -32,6 +32,7 @@ const MostSellingProducts = () => {
     name: "",
     productQuantity: "",
     categoryId: "",
+    description: "", // ✅ added
   });
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -107,6 +108,7 @@ const MostSellingProducts = () => {
       name: product.productName,
       productQuantity: product.quantity,
       categoryId: product.categoryId || "",
+      description: product.description || "", // ✅ added
     });
     setImagePreview(product.image || null);
     setImage(null);
@@ -121,6 +123,7 @@ const MostSellingProducts = () => {
       data.append("name", formData.name);
       data.append("productQuantity", formData.productQuantity);
       data.append("categoryId", formData.categoryId);
+      data.append("description", formData.description); // ✅ added
       if (image) data.append("image", image);
 
       if (editMode && editProductId) {
@@ -145,7 +148,12 @@ const MostSellingProducts = () => {
         );
       }
 
-      setFormData({ name: "", productQuantity: "", categoryId: "" });
+      setFormData({
+        name: "",
+        productQuantity: "",
+        categoryId: "",
+        description: "", // ✅ reset
+      });
       setImage(null);
       setImagePreview(null);
       setOpenModal(false);
@@ -198,7 +206,12 @@ const MostSellingProducts = () => {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
-            setFormData({ name: "", productQuantity: "", categoryId: "" });
+            setFormData({
+              name: "",
+              productQuantity: "",
+              categoryId: "",
+              description: "", // ✅ reset
+            });
             setImage(null);
             setImagePreview(null);
             setEditMode(false);
@@ -268,6 +281,20 @@ const MostSellingProducts = () => {
                     })
                   }
                   margin="normal"
+                  required
+                />
+
+                {/* ✅ Description Field */}
+                <TextField
+                  fullWidth
+                  label="Description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  margin="normal"
+                  multiline
+                  rows={4}
                   required
                 />
 
